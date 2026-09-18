@@ -29,6 +29,13 @@ enum Rating {
   BELOW_STANDARD
 }
 
+enum DeliverableStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  DELAYED
+}
+
 model User {
   id        String   @id @default(uuid())
   unitId    String
@@ -42,6 +49,8 @@ model User {
 
   // Relations
   unit      Unit     @relation(fields: [unitId], references: [id])
+
+weeklySubmissions WeeklySubmission[]
 
   position Position @relation(fields: [positionId], references: [id])
   createdAt DateTime @default(now())
@@ -70,4 +79,44 @@ model Position {
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+
+model WeeklySubmission {
+  id             String           @id @default(uuid())
+  userId         String
+
+  weekStart      DateTime
+  weekEnd        DateTime
+
+  status         SubmissionStatus @default(DRAFT)
+  supportNeeded  String?
+  rating         Rating?
+
+  submittedAt    DateTime?
+  reviewedAt     DateTime?
+  managerComment String?
+
+  user           User             @relation(fields: [userId], references: [id])
+  deliverables   Deliverable[]
+
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([userId, weekStart])
+}
+
+model Deliverable {
+  id                 String            @id @default(uuid())
+  weeklySubmissionId String
+
+  title              String
+  verificationMethod String
+  dueDate            DateTime
+  status             DeliverableStatus @default(NOT_STARTED)
+
+  weeklySubmission   WeeklySubmission  @relation(fields: [weeklySubmissionId], references: [id])
+
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 }
