@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { listUsers, storeUser } from '../controllers/user.controller.js'
 import { asyncHandler } from '../utils/async-handler.js'
+import { UserController } from '../controllers/user.controller.js'
 
 export const userRouter = Router()
 
-userRouter.get('/', asyncHandler(listUsers))
-userRouter.post('/', asyncHandler(storeUser))
+userRouter.get("/users", UserController.GetAllUserController)
+userRouter.post("/users", UserController.CreateUser)
