@@ -6,6 +6,7 @@ import { userRouter } from "./routes/user.routes.js";
 import { WeeklyRouter } from "./routes/WeeklyRoutes.js";
 import { OrganizationRouter } from "./routes/organizationRoutes.js";
 import { AuthRoutes } from "./routes/AuthRoutes.js";
+import { DashboardRouter } from "./routes/DashboardRoutes.js";
 
 export const app = express();
 
@@ -31,5 +32,6 @@ app.use(userRouter);
 app.use(WeeklyRouter);
 app.use(OrganizationRouter)
 app.use(AuthRoutes)
+app.use(DashboardRouter)
 
 app.use(errorHandler);

@@ -32,9 +32,7 @@ enum DeliverableStatus {
 
   SUBMITTED
   REVIEWED
-  // IN_PROGRESS
-  // COMPLETED
-  // DELAYED
+
 }
 
 model User {
@@ -82,29 +80,42 @@ model Position {
   updatedAt   DateTime @updatedAt
 }
 
-
 model WeeklySubmission {
-  id             String           @id @default(uuid())
+id             String           @id @default(uuid())
   userId         String
-
   weekStart      DateTime
   weekEnd        DateTime
-
   status         SubmissionStatus @default(DRAFT)
   supportNeeded  String?
   rating         Rating?
-
   submittedAt    DateTime?
   reviewedAt     DateTime?
-  managerComment String?
 
-  user           User             @relation(fields: [userId], references: [id])
+  user           User    @relation(fields: [userId], references: [id])
   deliverables   Deliverable[]
+  comments       SubmissionComment[]
 
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 
   @@unique([userId, weekStart])
+}
+
+model SubmissionComment {
+  id            String           @id @default(uuid())
+  submissionId  String
+  comment       String
+
+submission WeeklySubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model ManagersComment {
+  id             String           @id @default(uuid())
+  weeklySubmissionId    String  @unique
+  managerComment    String
 }
 
 model Deliverable {

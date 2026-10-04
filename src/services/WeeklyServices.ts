@@ -1,14 +1,25 @@
 import { WeeklySubmission } from '@prisma/client'
 import { prisma } from '../config/prisma.js'
 import dayjs from 'dayjs'
-
+import isoweek from "dayjs/plugin/isoWeek.js"
 
 export const weeklySubmissionServices = {
-async GetAllSubmissions(search?: string) {
+async GetAllSubmissions(search?: string, thisWeek?: string) {
   const searchTerm = search?.trim();
+
+  dayjs.extend(isoweek);
+
+  const weekStart = dayjs().startOf("isoWeek").toDate();
+
+
+
 
   return prisma.weeklySubmission.findMany({
     where: {
+      ...(thisWeek === "true" && {
+        weekStart: weekStart,
+      }),
+
       OR: searchTerm
         ? [
             {
@@ -42,10 +53,12 @@ async GetAllSubmissions(search?: string) {
               },
             },
           ]
+          
         : undefined,
     },
 
     select: {
+      id: true,
       weekStart: true,
       weekEnd: true,
       status: true,
@@ -53,7 +66,6 @@ async GetAllSubmissions(search?: string) {
       rating: true,
       submittedAt: true,
       reviewedAt: true,
-      managerComment: true,
 
       deliverables: {
         select: {
@@ -78,10 +90,16 @@ async GetAllSubmissions(search?: string) {
           },
         },
       },
+
+      comments: {
+        select: {
+          comment: true,
+          createdAt: true,
+        },
+      },
     },
   });
 },
-
 
 async CreateWeeklySubmissions(submissions: any) {
   // 1. Check userId
@@ -179,6 +197,86 @@ if (existingSubmission) {
     },
   });
 },
+
+
+async CreateComment(data: any) {
+  return prisma.$transaction(async (tx) => {
+
+    const submission = await tx.weeklySubmission.findUnique({
+      where: {
+        id: data.submissionId,
+      },
+      include: {
+        deliverables: true,
+      },
+    });
+
+    if (!submission) {
+      throw new Error("No record exists");
+    }
+
+    // Create manager comment
+    const comment = await tx.submissionComment.create({
+      data: {
+        submissionId: data.submissionId,
+        comment: data.comment,
+      },
+    });
+
+    // Update every deliverable belonging to this submission
+    await tx.deliverable.updateMany({
+      where: {
+          weeklySubmissionId: data.submissionId,
+      },
+      data: {
+        status: "REVIEWED",
+      },
+    });
+
+    // Mark the whole weekly submission as reviewed
+    await tx.weeklySubmission.update({
+      where: {
+        id: data.submissionId,
+      },
+      data: {
+        status: "REVIEWED",
+        reviewedAt: new Date(),
+      },
+    });
+
+    return comment;
+  });
+},
+
+async GetCommentsById(id:string){
+
+  return prisma.weeklySubmission.findUnique({
+    where:{
+      id
+    }, 
+
+    select:{
+      comments:true
+    }
+
+  })
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // async UpdateDeliverable(
 //   deliverableId: string,
