@@ -4,7 +4,10 @@ import dayjs from 'dayjs'
 import isoweek from "dayjs/plugin/isoWeek.js"
 
 export const weeklySubmissionServices = {
-async GetAllSubmissions(search?: string, thisWeek?: string) {
+async GetAllSubmissions(search?: string, thisWeek?: string,
+status?:string, 
+
+) {
   const searchTerm = search?.trim();
 
   dayjs.extend(isoweek);
@@ -19,6 +22,8 @@ async GetAllSubmissions(search?: string, thisWeek?: string) {
       ...(thisWeek === "true" && {
         weekStart: weekStart,
       }),
+
+
 
       OR: searchTerm
         ? [
@@ -329,5 +334,13 @@ async GetCommentsById(id:string){
 //     },
 //   });
 // }
+
+
+
+
+
+
+//  Rollng 14 days period
+
 
 }

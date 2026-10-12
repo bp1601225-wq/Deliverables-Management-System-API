@@ -26,6 +26,10 @@ export const Dashboardservice = async () => {
     },
   }),
 
+
+
+
+
   prisma.deliverable.count({
     where: {
       dueDate: {
@@ -40,6 +44,12 @@ export const Dashboardservice = async () => {
       status: "SUBMITTED",
     },
   }),
+
+  
+  
+  
+
+
 ]);
 
   const completionRate =  totalDeliverables > 0
@@ -48,12 +58,14 @@ export const Dashboardservice = async () => {
       )
     : 0;
 
+
   return {
     totalDeliverables,
     haveReachedDueDate,
     havePassedDueDate,
     pendingReviews,
     completionRate
-
+    
   };
+
 };
